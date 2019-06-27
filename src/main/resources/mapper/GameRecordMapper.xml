@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hyyn.netty.crossfire.dao.GameRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.hyyn.netty.crossfire.domain.GameRecord">
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="user_id" property="user_id" jdbcType="INTEGER" />
+    <result column="cost_time" property="cost_time" jdbcType="INTEGER" />
+    <result column="is_success" property="is_success" jdbcType="INTEGER" />
+    <result column="machine_id" property="machine_id" jdbcType="INTEGER" />
+    <result column="merchant_id" property="merchant_id" jdbcType="INTEGER" />
+    <result column="create_time" property="create_time" jdbcType="VARCHAR" />
+    <result column="update_time" property="update_time" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+     id,user_id,cost_time,is_success,create_time
+  </sql>
+  <sql id="Prize_Column_List">
+     id,user_id,is_success,merchant_id,machine_id
+  </sql>
+
+  <sql id="Rank_Column_List">
+     g.id,g.user_id,g.cost_time,g.merchant_id,u.user_id,u.user_nickname,u.user_headimg
+  </sql>
+
+  <insert id="insert" parameterType="com.hyyn.netty.crossfire.domain.GameRecord">
+    /*新增后返回主键*/
+    <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into game_record (`user_id`, `cost_time`, `is_success`, `machine_id`,
+    `create_time`, `update_time`,`merchant_id`)
+    values (#{user_id,jdbcType=INTEGER}, #{cost_time,jdbcType=INTEGER},#{is_success,jdbcType=INTEGER},
+    #{machine_id,jdbcType=INTEGER},#{create_time,jdbcType=VARCHAR}, #{update_time,jdbcType=VARCHAR}
+    , #{merchant_id,jdbcType=INTEGER}
+    )
+  </insert>
+
+
+  <select id="queryList" resultMap="BaseResultMap">
+      select * from game_record
+  </select>
+
+  <select id="queryByUserId" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+      select
+      <include refid="Base_Column_List"/>
+      from game_record
+      where user_id=#{userId}
+  </select>
+
+  <select id="queryByMerchantIdForRank" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+    select
+    <include refid="Rank_Column_List"/>
+    FROM `game_record` g ,wx_user u where g.is_success=1
+    <if test="merchantId != 0">
+      and g.merchant_id=#{merchantId}
+    </if>
+    <if test="userId != 0">
+      and g.user_id=#{userId}
+    </if>
+    and not EXISTS (SELECT 1 from game_record r where g.user_id=r.user_id and g.cost_time > r.cost_time and r.is_success=1)
+    and g.user_id=u.user_id
+    order by g.cost_time
+    limit 20;
+  </select>
+
+  <select id="queryById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List"/>
+      from game_record where id=#{id}
+  </select>
+
+  <select id="queryByIdForPrize" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select
+    <include refid="Prize_Column_List"/>
+    from game_record where id=#{id}
+  </select>
+
+
+  <update id="update" parameterType="com.hyyn.netty.crossfire.domain.GameRecord">
+    update game_record
+    <set>
+      <if test="merchant_wallet != null">`merchant_wallet`=#{merchant_wallet}</if>
+    </set>
+    where id=#{id}
+  </update>
+
+  <delete id="delete"  parameterType="java.lang.Integer">
+    delete from game_record where id = #{id}
+ </delete>
+</mapper>

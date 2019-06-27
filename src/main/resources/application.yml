@@ -1,0 +1,24 @@
+netty:
+  tcp_port: 9000
+  http_port: 9999
+  url: 127.0.0.1
+server:
+  port: 8081
+
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://49.4.94.22:3306/crossfire
+    username: noboring
+    password: 13952065#*@
+    driverClassName: com.mysql.cj.jdbc.Driver
+
+mybatis:
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: com.hyyn.netty.crossfire.domain
+
+#日志配置
+logging:
+  path: logback.xml
+  level:
+    com.hyyn.netty.crossfire.dao: debug
